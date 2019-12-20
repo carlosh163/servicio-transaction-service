@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.springboot.appbanco.model.Account;
 import com.springboot.appbanco.model.Client;
+import com.springboot.appbanco.model.CreditAccount;
 import com.springboot.appbanco.model.Person;
 import com.springboot.appbanco.model.Transaction;
 import com.springboot.appbanco.service.ITransactionService;
@@ -42,8 +43,13 @@ public class TransactionController {
 	@Qualifier("persona")
 	WebClient wCPerson;
 	
-	@PostMapping("/deposit/{accNumber}/{quantity}")
-	public Mono<Transaction> deposit(@PathVariable Integer accNumber, @PathVariable double quantity){
+	@Autowired
+	@Qualifier("cuentaCredito")
+	WebClient wCAccountCredit;
+	
+	
+	@PostMapping("/deposit/{accNumber}/{quantity}/{originMov}")
+	public Mono<Transaction> deposit(@PathVariable Integer accNumber, @PathVariable double quantity,@PathVariable String originMov){
 		
 		
 		Map<String,Object> params = new HashMap();
@@ -63,6 +69,7 @@ public class TransactionController {
 					objT.setAccountNumber(accNumber);
 					objT.setQuantity(quantity);
 					objT.setTransactionType("Deposito");
+					objT.setOriginMov(originMov);
 					return service.save(objT);
 				});
 	}
@@ -101,6 +108,7 @@ public class TransactionController {
 						objT.setAccountNumber(accNumber);
 						objT.setQuantity(quantity);
 						objT.setTransactionType("Retiro");
+						objT.setOriginMov("Efectivo");
 						return service.save(objT);
 					}
 					
@@ -122,5 +130,99 @@ public class TransactionController {
 	public Flux<Transaction> list(){
 		return service.getAll();
 	}
+	
+	
+	@PostMapping("/consume/{accNumber}/{quantity}")
+	public Mono<Transaction> consume(@PathVariable Integer accNumber, @PathVariable double quantity){
+		
+		
+		Map<String,Object> params = new HashMap();
+		params.put("accountNumber", accNumber);
+		params.put("quantity", quantity);
+		
+		CreditAccount objAcc = new CreditAccount();
+		objAcc.setAccountstatus('N');
+		
+		
+		
+		return wCAccountCredit.put().uri("/updateBalanceAccountByAccountNumberConsumer/{accountNumber}/{quantity}",params).retrieve().bodyToMono(CreditAccount.class)
+				
+				
+				.switchIfEmpty( Mono.just(objAcc))
+				
+				.flatMap(account ->{
+					
+					
+					
+					if(account.getAccountstatus() =='N') {
+						return Mono.empty();
+					}else {
+						wCClient.put().uri("/updateBalanceAccountByAccountNumberConsumer/{accountNumber}/{quantity}",params).retrieve().bodyToFlux(Client.class).subscribe();
+						
+						
+						Transaction objT = new Transaction();
+						
+						objT.setDate(new Date());
+						objT.setAccountNumber(accNumber);
+						objT.setQuantity(quantity);
+						objT.setTransactionType("Consumo");
+						objT.setOriginMov("Efectivo");
+						return service.save(objT);
+					}
+					
+					
+				});
+		
+		
+	}
+	
+	
+	@PostMapping("/payment/{accNumber}/{quantity}/{originMov}")
+	public Mono<Transaction> payment(@PathVariable Integer accNumber, @PathVariable double quantity,@PathVariable String originMov){
+		
+		
+		Map<String,Object> params = new HashMap();
+		params.put("accountNumber", accNumber);
+		params.put("quantity", quantity);
+		
+		CreditAccount objAcc = new CreditAccount();
+		objAcc.setAccountstatus('N');
+		
+		
+		
+		return wCAccountCredit.put().uri("/updateBalanceAccounByAccountNumberPayment/{accountNumber}/{quantity}",params).retrieve().bodyToMono(CreditAccount.class)
+				
+				
+				.switchIfEmpty( Mono.just(objAcc))
+				
+				.flatMap(account ->{
+					
+					
+					
+					if(account.getAccountstatus() =='N') {
+						return Mono.empty();
+					}else {
+						wCClient.put().uri("/updateBalanceAccounByAccountNumberPayment/{accountNumber}/{quantity}",params).retrieve().bodyToFlux(Client.class).subscribe();
+						
+						
+						Transaction objT = new Transaction();
+						
+						objT.setDate(new Date());
+						objT.setAccountNumber(accNumber);
+						objT.setQuantity(quantity);
+						objT.setTransactionType("Pago");
+						objT.setOriginMov(originMov);
+						return service.save(objT);
+					}
+					
+					
+				});
+		
+		
+	}
+	
+	
+	//
+	
 	
 }

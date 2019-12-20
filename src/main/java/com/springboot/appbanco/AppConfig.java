@@ -19,6 +19,9 @@ public class AppConfig {
 	@Value("${config.base.endpoint.person}")
 	private String urlPerso;
 	
+	@Value("${config.base.endpoint.accCredit}")
+	private String urlAccCred;
+	
 
 	@Bean
 	@Qualifier("cuenta")
@@ -38,6 +41,13 @@ public class AppConfig {
 	public WebClient registrarWebClientByPerson() {
 
 		return WebClient.create(urlPerso); //EndPoint para conectarse con ese MS.
+	}
+	
+	@Bean
+	@Qualifier("cuentaCredito")
+	public WebClient registrarWebClientByAccCredit() {
+
+		return WebClient.create(urlAccCred); //EndPoint para conectarse con ese MS.
 	}
 	
 	

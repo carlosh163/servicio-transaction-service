@@ -20,6 +20,8 @@ public class Transaction {
 	private double quantity;
 	private String TransactionType; // Deposito - Retiro ---- Consumo - Pagos.
 	
+	private String originMov; // Efectivo (Desposito - Pago - Consumo - Retiro)  -- NroCuenta (Deposito - Pago (2do) )
+	
 	public Transaction() {
 		// TODO Auto-generated constructor stub
 	}
@@ -62,6 +64,14 @@ public class Transaction {
 
 	public void setTransactionType(String transactionType) {
 		TransactionType = transactionType;
+	}
+
+	public String getOriginMov() {
+		return originMov;
+	}
+
+	public void setOriginMov(String originMov) {
+		this.originMov = originMov;
 	}
 	
 	
