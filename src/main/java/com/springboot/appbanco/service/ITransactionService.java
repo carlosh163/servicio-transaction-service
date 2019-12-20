@@ -10,4 +10,5 @@ public interface ITransactionService {
 	
 	Mono<Transaction> save(Transaction transt);
 	
+	Flux<Transaction> getTranByNroAccount(Integer NumberAcc);
 }

@@ -18,9 +18,7 @@ import lombok.Data;
 @Data
 public class CreditAccount {
 
-	@Id
-	private String codAccount;
-
+	
 	private String productType; // Cuenta Bancarias o Producto Credito.
 
 	private String accountType; // CRED = Personal, Empresarial, Tarjeta Credito, Adelanto Efectivo
@@ -35,8 +33,6 @@ public class CreditAccount {
 
 	private double balance; // saldo
 
-	private Client customer;
-	
 	
 	//Datos segun Credito:
 	
@@ -46,13 +42,7 @@ public class CreditAccount {
 
 	private char accountstatus; // Activo o Inactivo.
 
-	public String getCodAccount() {
-		return codAccount;
-	}
-
-	public void setCodAccount(String codAccount) {
-		this.codAccount = codAccount;
-	}
+	
 
 	public Integer getAccountNumber() {
 		return accountNumber;
@@ -102,14 +92,6 @@ public class CreditAccount {
 
 	public void setProductType(String productType) {
 		this.productType = productType;
-	}
-
-	public Client getCustomer() {
-		return customer;
-	}
-
-	public void setCustomer(Client customer) {
-		this.customer = customer;
 	}
 
 	public double getConsumption() {

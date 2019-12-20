@@ -2,6 +2,7 @@ package com.springboot.appbanco.controller;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -222,7 +223,40 @@ public class TransactionController {
 	}
 	
 	
-	//
+	// Consult los Movimientos de un CLiente(dni): mostrar transacciones de las cuentas que le pertenecen.
+	@GetMapping("/findTransactionByNumberDocuCLient/{numberDocument}")
+	public Flux<Transaction> findTransactionByNumberDocuCLient(@PathVariable String numberDocument){
+		
+		Map<String,Object> params = new HashMap();
+		params.put("nroDoc", numberDocument);
+		
+		//Mono
+		return wCClient.get().uri("/BuscarClientePorNroDoc/{nroDoc}",params)
+				.retrieve()
+				.bodyToMono(Client.class)
+				
+				.map(objClient->{
+					
+					List<Account> lstAccBank = objClient.getAccountList();
+					//List<CreditAccount> lstAccCred = objClient.getCreditAccountList();
+					
+					return lstAccBank;
+					
+				}).flatMapMany(lst -> Flux.fromIterable(lst))
+				.flatMap(objB->{
+					Integer nroAcc = objB.getAccountNumber();
+					
+					return service.getTranByNroAccount(nroAcc);
+				});
+		//return Flux.empty();
+		
+	}
+	
+	
+	@GetMapping("/prub/{nroAcc}")
+	public Flux<Transaction> prub(@PathVariable Integer nroAcc){
+		return service.getTranByNroAccount(nroAcc);
+	}
 	
 	
 }

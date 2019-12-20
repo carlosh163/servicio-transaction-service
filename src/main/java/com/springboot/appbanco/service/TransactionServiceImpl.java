@@ -30,4 +30,9 @@ public class TransactionServiceImpl implements ITransactionService{
 		return repo.findAll();
 	}
 
+	@Override
+	public Flux<Transaction> getTranByNroAccount(Integer NumberAcc) {
+		return repo.findByAccountNumber(NumberAcc);
+	}
+
 }

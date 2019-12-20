@@ -18,8 +18,6 @@ import lombok.Data;
 @Data
 public class Account {
 
-	@Id
-	private String codAccount;
 
 	private String ProductType; // Cuenta Bancarias o Producto Credito.
 
@@ -36,18 +34,10 @@ public class Account {
 
 	private double balance; // saldo
 
-	private List<Client> customerList; // Todos los Clientes que poseen una cuenta (Titulares)
-	//private List<PersonAuthorized> personAuthorizedList; // Personas Autorizadas
+	
 
 	private char accountstatus; // Activo o Inactivo.
 
-	public String getCodAccount() {
-		return codAccount;
-	}
-
-	public void setCodAccount(String codAccount) {
-		this.codAccount = codAccount;
-	}
 
 	public Integer getAccountNumber() {
 		return accountNumber;
@@ -73,14 +63,7 @@ public class Account {
 		this.balance = balance;
 	}
 
-	public List<Client> getCustomerList() {
-		return customerList;
-	}
-
-	public void setCustomerList(List<Client> customerList) {
-		this.customerList = customerList;
-	}
-
+	
 
 	public char getAccountstatus() {
 		return accountstatus;
