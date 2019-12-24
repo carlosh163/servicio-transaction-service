@@ -16,7 +16,7 @@ public class Transaction {
 	
 	@JsonFormat(pattern = "dd-MM-yyyy",shape = Shape.STRING)
 	private Date date;
-	private Integer AccountNumber;
+	private Integer accountNumber;
 	private double quantity;
 	private String TransactionType; // Deposito - Retiro ---- Consumo - Pagos.
 	
@@ -42,12 +42,14 @@ public class Transaction {
 		this.date = date;
 	}
 
+	
+	
 	public Integer getAccountNumber() {
-		return AccountNumber;
+		return accountNumber;
 	}
 
 	public void setAccountNumber(Integer accountNumber) {
-		AccountNumber = accountNumber;
+		this.accountNumber = accountNumber;
 	}
 
 	public double getQuantity() {
