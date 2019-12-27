@@ -1,5 +1,7 @@
 package com.springboot.appbanco.repo;
 
+import java.util.Date;
+
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,4 +14,6 @@ public interface ITransactionRepo extends ReactiveMongoRepository<Transaction, S
 
 	
 	public Flux<Transaction> findByAccountNumber(Integer NumAcc);
+	
+	public Flux<Transaction> findByAccountNumberAndDateBetween(Integer numAcc,Date startDate,Date endDate);
 }

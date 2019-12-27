@@ -2,6 +2,8 @@ package com.springboot.appbanco.controller;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -20,11 +22,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.springboot.appbanco.exception.ModeloNotFoundException;
 import com.springboot.appbanco.exception.ModeloBadRequestException;
+import com.springboot.appbanco.exception.ModeloNotFoundException;
 import com.springboot.appbanco.exception.ResponseExceptionHandler;
 import com.springboot.appbanco.model.Account;
 import com.springboot.appbanco.model.Client;
+import com.springboot.appbanco.model.ConsultPeriod;
 import com.springboot.appbanco.model.CreditAccount;
 import com.springboot.appbanco.model.Person;
 import com.springboot.appbanco.model.Transaction;
@@ -144,100 +147,85 @@ public class TransactionController {
 		Map<String, Object> params = new HashMap();
 		params.put("accountNumber", accNumber);
 
-		
-		//Cobrar Comision:
-				//Validar el num maximo:
-				return  wCAccount.get().uri("/findAccountByNumberAccount/{accountNumber}", params).retrieve().bodyToMono(Account.class)
-						.switchIfEmpty(Mono.empty())
-						.flatMap(c ->{
-							log.info("numMax:"+c.getNumMaxRetirement());
-							
-							
-							return service.getTranByNroAccount(accNumber).filter(cb -> cb.getTransactionType().equals("Retiro"))
-									.count()
-									.flatMap(q ->{
-										
-										boolean estadoCommi=false;
-										log.info("Cantidad de Reti en la Acc"+q);
-								if(q >= c.getNumMaxRetirement()) {
+		// Cobrar Comision:
+		// Validar el num maximo:
+		return wCAccount.get().uri("/findAccountByNumberAccount/{accountNumber}", params).retrieve()
+				.bodyToMono(Account.class).switchIfEmpty(Mono.empty()).flatMap(c -> {
+					log.info("numMax:" + c.getNumMaxRetirement());
+
+					return service.getTranByNroAccount(accNumber).filter(cb -> cb.getTransactionType().equals("Retiro"))
+							.count().flatMap(q -> {
+
+								boolean estadoCommi = false;
+								log.info("Cantidad de Reti en la Acc" + q);
+								if (q >= c.getNumMaxRetirement()) {
 									log.info("Excede la cantidad permitida");
 									estadoCommi = true;
-								}else {
+								} else {
 									log.info("No excede");
-									estadoCommi =false;
+									estadoCommi = false;
 								}
-								return Mono.just(estadoCommi).flatMap(v ->{
+								return Mono.just(estadoCommi).flatMap(v -> {
 									double vCommi = 0.0;
-									log.info("Estado Commi"+v);
-									if(v) {
-										vCommi = 0.15*quantity;
+									log.info("Estado Commi" + v);
+									if (v) {
+										vCommi = 0.15 * quantity;
 									}
-									
-									
-									return Mono.just(vCommi)
-											.flatMap(commi ->{
-												log.info("Valor de Comision:"+commi);
-												
-												Map<String, Object> paramsC = new HashMap();
-												paramsC.put("accountNumber", accNumber);
-												paramsC.put("quantity", quantity+commi);
-												
-												
-												
-												Account objAcc = new Account();
-												objAcc.setAccountstatus('N');
 
-												return wCAccount.put().uri("/updateBalanceAccountRetireByAccountNumber/{accountNumber}/{quantity}", paramsC)
-														.retrieve().bodyToMono(Account.class)
-														.switchIfEmpty(Mono.just(objAcc))
-														.flatMap(account -> {
+									return Mono.just(vCommi).flatMap(commi -> {
+										log.info("Valor de Comision:" + commi);
 
-															if (account.getAccountstatus() == 'N') {
-																return Mono.empty();
-															} else {
-																return wCClient.put()
-																		.uri("/updateBalanceAccountRetireByAccountNumber/{accountNumber}/{quantity}", paramsC)
-																		.retrieve().bodyToFlux(Client.class)
-																		.next()
-																		.flatMap(o ->{
-																			return wCPerson.put()
-																					.uri("/updateBalanceAccountRetireByAccountNumber/{accountNumber}/{quantity}", paramsC)
-																					.retrieve().bodyToFlux(Person.class)
-																					.next()
-																					.flatMap(o2->{
-																						Transaction objT = new Transaction();
+										Map<String, Object> paramsC = new HashMap();
+										paramsC.put("accountNumber", accNumber);
+										paramsC.put("quantity", quantity + commi);
 
-																						objT.setDate(new Date());
-																						objT.setAccountNumber(accNumber);
-																						objT.setQuantity(quantity);
-																						objT.setTransactionType("Retiro");
-																						objT.setOriginMov("Efectivo");
-																						objT.setCommission(commi);
-																						return service.save(objT);
-																					});
-																		});
-																
+										Account objAcc = new Account();
+										objAcc.setAccountstatus('N');
 
-																
-															}
+										return wCAccount.put().uri(
+												"/updateBalanceAccountRetireByAccountNumber/{accountNumber}/{quantity}",
+												paramsC).retrieve().bodyToMono(Account.class)
+												.switchIfEmpty(Mono.just(objAcc)).flatMap(account -> {
 
-														}).map(p -> ResponseEntity.ok()
-													    	      .contentType(APPLICATION_JSON)
-													    	      .body(p))
-													    		.cast(ResponseEntity.class)
-													    		.defaultIfEmpty(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-																.body(exception.manejarModeloExcepcionesBR(new ModeloBadRequestException("Error saldo insuficiente ..") ) ));
-												
-											});
+													if (account.getAccountstatus() == 'N') {
+														return Mono.empty();
+													} else {
+														return wCClient.put().uri(
+																"/updateBalanceAccountRetireByAccountNumber/{accountNumber}/{quantity}",
+																paramsC).retrieve().bodyToFlux(Client.class).next()
+																.flatMap(o -> {
+																	return wCPerson.put().uri(
+																			"/updateBalanceAccountRetireByAccountNumber/{accountNumber}/{quantity}",
+																			paramsC).retrieve().bodyToFlux(Person.class)
+																			.next().flatMap(o2 -> {
+																				Transaction objT = new Transaction();
+
+																				objT.setDate(new Date());
+																				objT.setAccountNumber(accNumber);
+																				objT.setQuantity(quantity);
+																				objT.setTransactionType("Retiro");
+																				objT.setOriginMov("Efectivo");
+																				objT.setCommission(commi);
+																				return service.save(objT);
+																			});
+																});
+
+													}
+
+												}).map(p -> ResponseEntity.ok().contentType(APPLICATION_JSON).body(p))
+												.cast(ResponseEntity.class)
+												.defaultIfEmpty(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+														.body(exception.manejarModeloExcepcionesBR(
+																new ModeloBadRequestException(
+																		"Error saldo insuficiente .."))));
+
+									});
 								});
 							});
-				}).map(p -> ResponseEntity.ok()
-			    	      .contentType(APPLICATION_JSON)
-			    	      .body(p))
-			    		.cast(ResponseEntity.class)
-			    		.defaultIfEmpty(ResponseEntity.status(HttpStatus.NOT_FOUND)
-						.body(exception.manejarModeloExcepciones(new ModeloNotFoundException("No se existe esa Cuenta Bancaria ..") ) ));
-		
+				}).map(p -> ResponseEntity.ok().contentType(APPLICATION_JSON).body(p)).cast(ResponseEntity.class)
+				.defaultIfEmpty(ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception
+						.manejarModeloExcepciones(new ModeloNotFoundException("No se existe esa Cuenta Bancaria .."))));
+
 		/*
 		
 						
@@ -431,6 +419,13 @@ public class TransactionController {
 	@GetMapping("/prub/{nroAcc}")
 	public Flux<Transaction> prub(@PathVariable Integer nroAcc) {
 		return service.getTranByNroAccount(nroAcc);
+	}
+
+	// Consult todas las comisiones cobradas en un periodo de tiempo.
+	@ApiOperation(value = "RQ07-Report of all commissions charged in a period of time.", notes = "")
+	@GetMapping("/findTransactionCommissionByNumberAccountByPeriod")
+	public Flux<Transaction> findTransactionCommissionByNumberAccountByPeriod(@RequestBody ConsultPeriod consultPeriod) {
+		return service.findByAccountNumberByDateBetween(consultPeriod);
 	}
 
 }
