@@ -22,6 +22,8 @@ public class Transaction {
 	
 	private String originMov; // Efectivo (Desposito - Pago - Consumo - Retiro)  -- NroCuenta (Deposito - Pago (2do) )
 	
+	private double commission;
+	
 	public Transaction() {
 		// TODO Auto-generated constructor stub
 	}
@@ -74,6 +76,14 @@ public class Transaction {
 
 	public void setOriginMov(String originMov) {
 		this.originMov = originMov;
+	}
+
+	public double getCommission() {
+		return commission;
+	}
+
+	public void setCommission(double commission) {
+		this.commission = commission;
 	}
 	
 	

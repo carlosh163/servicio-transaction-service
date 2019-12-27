@@ -34,7 +34,9 @@ public class Account {
 
 	private double balance; // saldo
 
-	
+	//Atributos PROYECTO 2:
+  private Integer numMaxDesposit;
+  private Integer numMaxRetirement;
 
 	private char accountstatus; // Activo o Inactivo.
 
@@ -79,6 +81,30 @@ public class Account {
 
 	public void setAccountType(String accountType) {
 		this.accountType = accountType;
+	}
+
+	public String getProductType() {
+		return ProductType;
+	}
+
+	public void setProductType(String productType) {
+		ProductType = productType;
+	}
+
+	public Integer getNumMaxDesposit() {
+		return numMaxDesposit;
+	}
+
+	public void setNumMaxDesposit(Integer numMaxDesposit) {
+		this.numMaxDesposit = numMaxDesposit;
+	}
+
+	public Integer getNumMaxRetirement() {
+		return numMaxRetirement;
+	}
+
+	public void setNumMaxRetirement(Integer numMaxRetirement) {
+		this.numMaxRetirement = numMaxRetirement;
 	}
 
 	
