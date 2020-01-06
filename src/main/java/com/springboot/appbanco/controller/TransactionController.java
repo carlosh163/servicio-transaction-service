@@ -232,13 +232,13 @@ public class TransactionController {
 						*/
 	}
 
-	@PostMapping
+	@PostMapping("/CreateL")
 	public Mono<Transaction> create(@RequestBody Transaction transt) {
 		return service.save(transt);
 
 	}
 
-	@GetMapping
+	@GetMapping("/SearchAll")
 	public Flux<Transaction> list() {
 		return service.getAll();
 	}
@@ -381,8 +381,12 @@ public class TransactionController {
 
 	}
 
-	// Consult los Movimientos de un CLiente(dni): mostrar transacciones de las
-	// cuentas que le pertenecen.
+	/**
+	 
+	 * Consult los Movimientos de un CLiente(dni): 
+	 * mostrar transacciones de las cuentas que le pertenecen.
+	 
+	 */
 	@ApiOperation(value = "RQ11-Check movements of my products", notes = "Returns all movements on all accounts that a customer has by entering their document number")
 	@GetMapping("/findTransactionByNumberDocuCLient/{numberDocument}")
 	public Flux<Transaction> findTransactionByNumberDocuCLient(@PathVariable String numberDocument) {
@@ -424,7 +428,8 @@ public class TransactionController {
 	// Consult todas las comisiones cobradas en un periodo de tiempo.
 	@ApiOperation(value = "RQ07-Report of all commissions charged in a period of time.", notes = "")
 	@GetMapping("/findTransactionCommissionByNumberAccountByPeriod")
-	public Flux<Transaction> findTransactionCommissionByNumberAccountByPeriod(@RequestBody ConsultPeriod consultPeriod) {
+	public Flux<Transaction> findTransactionCommissionByNumberAccountByPeriod(
+			@RequestBody ConsultPeriod consultPeriod) {
 		return service.findByAccountNumberByDateBetween(consultPeriod);
 	}
 
